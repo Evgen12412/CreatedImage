@@ -1,5 +1,1 @@
-yfinance
-matplotlib
-pandas
-ta
-plotly
+Pillow
