@@ -48,6 +48,10 @@ class DrawingApp:
                                          command=self.on_option_select)
         self.option_menu.grid(row=0, column=3, padx=5, pady=5)
 
+        # Clear color
+        self.clear_color = tk.Button(control_frame, text="Ластик", command = self.clear_colors)
+        self.clear_color.grid(row=0, column=4, padx=5, pady=5)
+
     def paint(self, event):
         if self.last_x and self.last_y:
             # Получаем размер кисти из выбранного значения OptionMenu
@@ -82,6 +86,16 @@ class DrawingApp:
 
     def on_option_select(self, value):
         pass
+
+    def clear_colors(self):
+        selected = True
+        if selected:
+            self.pen_color = 'white'
+            self.clear_color.configure(activebackground='green')
+        else:
+            self.pen_color = 'black'
+            self.clear_color.configure(activebackground=None)
+
 
 
 def main():
