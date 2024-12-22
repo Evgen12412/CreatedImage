@@ -24,6 +24,9 @@ class DrawingApp:
         self.last_x, self.last_y = None, None
         self.pen_color = 'black'
 
+        self.previous_color = 'black'  # Предыдущий цвет кисти
+        self.eraser_mode = False  # Режим ластика
+
         self.canvas.bind('<B1-Motion>', self.paint)
         self.canvas.bind('<ButtonRelease-1>', self.reset)
 
@@ -49,7 +52,7 @@ class DrawingApp:
         self.option_menu.grid(row=0, column=3, padx=5, pady=5)
 
         # Clear color
-        self.clear_color = tk.Button(control_frame, text="Ластик", command = self.clear_colors)
+        self.clear_color = tk.Button(control_frame, text="Ластик", command = self.toggle_eraser)
         self.clear_color.grid(row=0, column=4, padx=5, pady=5)
 
     def paint(self, event):
@@ -69,14 +72,26 @@ class DrawingApp:
         self.last_x, self.last_y = None, None
 
     def clear_canvas(self):
+        '''
+        Очистка окна
+        :return:
+        '''
         self.canvas.delete("all")
         self.image = Image.new("RGB", (600, 400), "white")
         self.draw = ImageDraw.Draw(self.image)
 
     def choose_color(self):
+        '''
+        Выбор цвета кисти
+        :return:
+        '''
         self.pen_color = colorchooser.askcolor(color=self.pen_color)[1]
 
     def save_image(self):
+        '''
+        Сохранение в файл
+        :return:
+        '''
         file_path = filedialog.asksaveasfilename(filetypes=[('PNG files', '*.png')])
         if file_path:
             if not file_path.endswith('.png'):
@@ -87,14 +102,22 @@ class DrawingApp:
     def on_option_select(self, value):
         pass
 
-    def clear_colors(self):
-        selected = True
-        if selected:
-            self.pen_color = 'white'
-            self.clear_color.configure(activebackground='green')
+    def toggle_eraser(self):
+        '''
+        Функция переключает режим кисти
+        :return:
+        '''
+        if self.eraser_mode:
+            # Выходим из режима ластика
+            self.pen_color = self.previous_color  # Возвращаем предыдущий цвет
+            self.eraser_mode = False
+            self.clear_color.configure(bg='SystemButtonFace', text="Ластик")  # Сбрасываем цвет кнопки
         else:
-            self.pen_color = 'black'
-            self.clear_color.configure(activebackground=None)
+            # Включаем режим ластика
+            self.previous_color = self.pen_color  # Сохраняем текущий цвет
+            self.pen_color = 'white'  # Устанавливаем белый цвет
+            self.eraser_mode = True
+            self.clear_color.configure(bg='green', text="Рисовать")
 
 
 
