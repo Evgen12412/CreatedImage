@@ -31,6 +31,9 @@ class DrawingApp:
         # Инструмент в виде пипетки для выбора цвета
         self.canvas.bind('<Button-3>', self.pick_color)  # Правая кнопка мыши
         self.canvas.bind('<Control-Button-1>', self.pick_color)  # Альтернатива для macOS
+        # Клавиши быстрого действия
+        self.root.bind('<Control-c>', self.choose_color)
+        self.root.bind('<Control-s>', self.save_image)
 
     def setup_ui(self):
         control_frame = tk.Frame(self.root)
@@ -78,11 +81,11 @@ class DrawingApp:
         self.image = Image.new("RGB", (600, 400), "white")
         self.draw = ImageDraw.Draw(self.image)
 
-    def choose_color(self):
+    def choose_color(self, e):
         self.pen_color = colorchooser.askcolor(color=self.pen_color)[1]
         self.update_color_indicator()
 
-    def save_image(self):
+    def save_image(self, e):
         file_path = filedialog.asksaveasfilename(filetypes=[('PNG files', '*.png')])
         if file_path:
             if not file_path.endswith('.png'):
