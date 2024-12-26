@@ -19,16 +19,21 @@ class DrawingApp:
 
         self.selected_option.set(self.size_brush[0])
 
+        # Определяем pen_color перед вызовом setup_ui
+        self.pen_color = 'black'
+
         self.setup_ui()
 
         self.last_x, self.last_y = None, None
-        self.pen_color = 'black'
-
-        self.previous_color = 'black'  # Предыдущий цвет кисти
-        self.eraser_mode = False  # Режим ластика
 
         self.canvas.bind('<B1-Motion>', self.paint)
         self.canvas.bind('<ButtonRelease-1>', self.reset)
+        # Инструмент в виде пипетки для выбора цвета
+        self.canvas.bind('<Button-3>', self.pick_color)  # Правая кнопка мыши
+        self.canvas.bind('<Control-Button-1>', self.pick_color)  # Альтернатива для macOS
+        # Клавиши быстрого действия
+        self.root.bind('<Control-c>', self.choose_color)
+        self.root.bind('<Control-s>', self.save_image)
 
     def setup_ui(self):
         control_frame = tk.Frame(self.root)
@@ -39,8 +44,8 @@ class DrawingApp:
         clear_button.grid(row=0, column=0, padx=5, pady=5)
 
         # Кнопка "Выбрать цвет"
-        color_button = tk.Button(control_frame, text="Выбрать цвет", command=self.choose_color)
-        color_button.grid(row=0, column=1, padx=5, pady=5)
+        self.color_button = tk.Button(control_frame, text="Выбрать цвет", command=self.choose_color)
+        self.color_button.grid(row=0, column=1, padx=5, pady=5)
 
         # Кнопка "Сохранить"
         save_button = tk.Button(control_frame, text="Сохранить", command=self.save_image)
@@ -51,9 +56,9 @@ class DrawingApp:
                                          command=self.on_option_select)
         self.option_menu.grid(row=0, column=3, padx=5, pady=5)
 
-        # Clear color
-        self.clear_color = tk.Button(control_frame, text="Ластик", command = self.toggle_eraser)
-        self.clear_color.grid(row=0, column=4, padx=5, pady=5)
+        # Индикатор текущего цвета
+        self.current_color_indicator = tk.Label(control_frame, width=5, height=1, bg=self.pen_color)
+        self.current_color_indicator.grid(row=0, column=4, padx=5, pady=5)
 
     def paint(self, event):
         if self.last_x and self.last_y:
@@ -72,26 +77,15 @@ class DrawingApp:
         self.last_x, self.last_y = None, None
 
     def clear_canvas(self):
-        '''
-        Очистка окна
-        :return:
-        '''
         self.canvas.delete("all")
         self.image = Image.new("RGB", (600, 400), "white")
         self.draw = ImageDraw.Draw(self.image)
 
-    def choose_color(self):
-        '''
-        Выбор цвета кисти
-        :return:
-        '''
+    def choose_color(self, e):
         self.pen_color = colorchooser.askcolor(color=self.pen_color)[1]
+        self.update_color_indicator()
 
-    def save_image(self):
-        '''
-        Сохранение в файл
-        :return:
-        '''
+    def save_image(self, e):
         file_path = filedialog.asksaveasfilename(filetypes=[('PNG files', '*.png')])
         if file_path:
             if not file_path.endswith('.png'):
@@ -102,23 +96,32 @@ class DrawingApp:
     def on_option_select(self, value):
         pass
 
-    def toggle_eraser(self):
-        '''
-        Функция переключает режим кисти
-        :return:
-        '''
-        if self.eraser_mode:
-            # Выходим из режима ластика
-            self.pen_color = self.previous_color  # Возвращаем предыдущий цвет
-            self.eraser_mode = False
-            self.clear_color.configure(bg='SystemButtonFace', text="Ластик")  # Сбрасываем цвет кнопки
-        else:
-            # Включаем режим ластика
-            self.previous_color = self.pen_color  # Сохраняем текущий цвет
-            self.pen_color = 'white'  # Устанавливаем белый цвет
-            self.eraser_mode = True
-            self.clear_color.configure(bg='green', text="Рисовать")
+    def pick_color(self, event):
+        """
+        Метод для выбора цвета пипеткой.
+        """
+        # Получаем координаты на холсте
+        x, y = event.x, event.y
 
+        # Проверяем, что координаты находятся в пределах изображения
+        if 0 <= x < self.image.width and 0 <= y < self.image.height:
+            try:
+                # Получаем цвет пикселя из изображения
+                color = self.image.getpixel((x, y))
+                # Преобразуем цвет в формат #RRGGBB
+                self.pen_color = "#{:02x}{:02x}{:02x}".format(*color)
+                # Обновляем индикатор текущего цвета
+                self.update_color_indicator()
+            except Exception as e:
+                messagebox.showwarning("Ошибка", f"Не удалось получить цвет пикселя: {e}")
+        else:
+            messagebox.showwarning("Ошибка", "Вы вышли за пределы холста!")
+
+    def update_color_indicator(self):
+        """
+        Обновляет индикатор текущего цвета.
+        """
+        self.current_color_indicator.config(bg=self.pen_color)
 
 
 def main():
