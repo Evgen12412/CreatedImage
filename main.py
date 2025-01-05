@@ -129,6 +129,10 @@ class DrawingApp:
         self.current_color_indicator.config(bg=self.pen_color)
 
     def set_size_window(self):
+        '''
+        Метод открывает окна для ввода размеров
+        :return:
+        '''
         # Создаем диалоговое окно
         dialog = tk.Toplevel(self.root)
         dialog.title("Изменить размер")
@@ -155,6 +159,10 @@ class DrawingApp:
         close_button.pack(pady=5)
 
     def apply_size(self):
+        '''
+        метод задает полученные размеры окну
+        :return:
+        '''
         # Получаем значения ширины и высоты из полей ввода
         width = self.entry_width.get()
         height = self.entry_height.get()
