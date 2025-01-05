@@ -1,5 +1,6 @@
 import tkinter as tk
 from tkinter import colorchooser, filedialog, messagebox
+
 from PIL import Image, ImageDraw
 
 
@@ -59,6 +60,10 @@ class DrawingApp:
         # Индикатор текущего цвета
         self.current_color_indicator = tk.Label(control_frame, width=5, height=1, bg=self.pen_color)
         self.current_color_indicator.grid(row=0, column=4, padx=5, pady=5)
+
+        # кнопка "именить размер окна"
+        size_canvas = tk.Button(control_frame, text="Размер экрана", command=self.set_size_window)
+        size_canvas.grid(row=0, column=5, padx=5, pady=5)
 
     def paint(self, event):
         if self.last_x and self.last_y:
@@ -122,6 +127,55 @@ class DrawingApp:
         Обновляет индикатор текущего цвета.
         """
         self.current_color_indicator.config(bg=self.pen_color)
+
+    def set_size_window(self):
+        # Создаем диалоговое окно
+        dialog = tk.Toplevel(self.root)
+        dialog.title("Изменить размер")
+        dialog.geometry("300x250")
+
+        # Метка и поле ввода для ширины
+        label_width = tk.Label(dialog, text="Ширина:")
+        label_width.pack(pady=5)
+        self.entry_width = tk.Entry(dialog)
+        self.entry_width.pack(pady=5)
+
+        # Метка и поле ввода для высоты
+        label_height = tk.Label(dialog, text="Высота:")
+        label_height.pack(pady=5)
+        self.entry_height = tk.Entry(dialog)
+        self.entry_height.pack(pady=5)
+
+        # Кнопка "Применить"
+        apply_button = tk.Button(dialog, text="Применить", command=self.apply_size)
+        apply_button.pack(pady=10)
+
+        # Кнопка "Закрыть"
+        close_button = tk.Button(dialog, text="Закрыть", command=dialog.destroy)
+        close_button.pack(pady=5)
+
+    def apply_size(self):
+        # Получаем значения ширины и высоты из полей ввода
+        width = self.entry_width.get()
+        height = self.entry_height.get()
+
+        # Проверяем, что введены числа и они больше нуля
+        if width.isdigit() and height.isdigit() and int(width) > 0 and int(height) > 0:
+            width = int(width)
+            height = int(height)
+
+            # Обновляем размеры холста
+            self.canvas_width = width
+            self.canvas_height = height
+
+            # Очищаем холст и создаем новое изображение
+            self.canvas.config(width=width, height=height)  # Обновляем размеры существующего Canvas
+            self.image = Image.new("RGB", (width, height), "white")
+            self.draw = ImageDraw.Draw(self.image)
+            self.clear_canvas()  # Очищаем холст
+        else:
+            # Выводим сообщение об ошибке, если введены некорректные данные
+            messagebox.showerror("Ошибка", "Ширина и высота должны быть положительными числами!")
 
 
 def main():
